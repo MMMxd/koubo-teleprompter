@@ -1,0 +1,27 @@
+# Android 构建产物
+.gradle/
+build/
+app/build/
+local.properties
+*.apk
+*.aab
+
+# 日志
+*.log
+
+# IDE
+.idea/
+*.iml
+captures/
+
+# 实验用大模型（182MB 双语备选，未接入）
+model-alt/
+
+# 系统
+.DS_Store
+
+# 会话测试产物
+/*.png
+/*.xml
+err*.txt
+build*.log

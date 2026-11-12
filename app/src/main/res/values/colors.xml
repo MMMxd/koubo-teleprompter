@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_bg">#FF6C5CE7</color>
+    <color name="bg">#FFF6F6FA</color>
+    <color name="card_bg">#FFFFFFFF</color>
+    <color name="border">#FFECECF1</color>
+    <color name="text_main">#FF191927</color>
+    <color name="text_sub">#FF8A8A96</color>
+    <color name="primary">#FF6C5CE7</color>
+    <color name="tint">#FFEFECFF</color>
+    <color name="accent">#FF6C5CE7</color>
+    <color name="danger">#FFE5484D</color>
+    <color name="pill_off_bg">#FFF1F1F5</color>
+    <!-- 提词全屏拍摄态（深色页专用） -->
+    <color name="dark_bg">#FF0E0E13</color>
+    <color name="dark_card">#FF17171F</color>
+</resources>

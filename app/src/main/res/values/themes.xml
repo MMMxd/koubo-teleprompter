@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 浅色主题（全局，方案 B 云白） -->
+    <style name="Theme.Wenan" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">#FF6C5CE7</item>
+        <item name="colorPrimaryDark">#FFF6F6FA</item>
+        <item name="colorAccent">#FF6C5CE7</item>
+        <item name="android:windowBackground">#FFF6F6FA</item>
+        <item name="android:statusBarColor">#FFF6F6FA</item>
+        <item name="android:navigationBarColor">#FFF6F6FA</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <!-- 深色主题：提词全屏拍摄态专用 -->
+    <style name="Theme.Wenan.Dark" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">#FF6C5CE7</item>
+        <item name="colorPrimaryDark">#FF0E0E13</item>
+        <item name="colorAccent">#FF6C5CE7</item>
+        <item name="android:windowBackground">#FF0E0E13</item>
+        <item name="android:statusBarColor">#FF0E0E13</item>
+        <item name="android:navigationBarColor">#FF0E0E13</item>
+    </style>
+</resources>

@@ -1,0 +1,57 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.mxd.koubo'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.mxd.koubo"
+        minSdk 26
+        targetSdk 34
+        versionCode 17
+        versionName "4.5"
+        // 双架构：手机 arm64 + 模拟器 x86_64（sherpa AAR 自带两个架构的 so）
+        ndk { abiFilters 'arm64-v8a', 'x86_64' }
+
+        // LLM 密钥从 local.properties 读取（git-ignore，不进仓库）
+        def lp = new Properties()
+        def lpFile = rootProject.file("local.properties")
+        if (lpFile.exists()) {
+            lpFile.withInputStream { lp.load(it) }
+        }
+        buildConfigField "String", "LLM_KEY", "\"${lp.getProperty('llmKey', '')}\""
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = '17' }
+    // 识别模型文件禁止压缩：sherpa native 层要按文件描述符直读，
+    // 压缩过的 onnx 资产会导致模型加载失败并 exit(255)（无声闪退根因）
+    androidResources {
+        noCompress += ['onnx', 'txt']
+    }
+}
+
+dependencies {
+    implementation files('libs/sherpa-onnx-2.0.1.aar')
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+}
