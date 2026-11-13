@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
@@ -14,12 +15,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 /**
- * 首页宿主：底部四 Tab —— 稿件（库）/ 热点（找选题）/ 写稿（AI 帮写 或 自己粘）/ 我的（偏好接口）
- * 稿件、写稿、我的三个视图在本 Activity 内切换；热点是独立页面。
+ * 首页宿主：底部三 Tab —— 稿件（库）/ 热点（找选题）/ 我的（偏好接口）
+ * 三页全部内嵌本 Activity 原位切换（淡入淡出过渡，滚动位置保留，不再整页跳变）；
+ * 写稿走常驻悬浮按钮（＋写稿），任意 Tab 一键直达。
  */
 class MainActivity : AppCompatActivity() {
 
@@ -28,12 +29,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var empty: TextView
     private lateinit var statsBar: TextView
     private lateinit var viewDrafts: View
-    private lateinit var viewWrite: View
+    private lateinit var viewHot: View
     private lateinit var viewMine: View
     private lateinit var tabDraftsLabel: TextView
-    private lateinit var tabWriteLabel: TextView
+    private lateinit var tabHotLabel: TextView
     private lateinit var tabMineLabel: TextView
+    private lateinit var tabDraftsIcon: TextView
+    private lateinit var tabHotIcon: TextView
+    private lateinit var tabMineIcon: TextView
+    private lateinit var hot: HotPane
     private val fmt = SimpleDateFormat("MM-dd HH:mm", Locale.CHINA)
+    private var currentTab = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,55 +51,120 @@ class MainActivity : AppCompatActivity() {
         empty = findViewById(R.id.empty)
         statsBar = findViewById(R.id.statsBar)
         viewDrafts = findViewById(R.id.viewDrafts)
-        viewWrite = findViewById(R.id.viewWrite)
+        viewHot = findViewById(R.id.viewHot)
         viewMine = findViewById(R.id.viewMine)
         tabDraftsLabel = findViewById(R.id.tabDraftsLabel)
-        tabWriteLabel = findViewById(R.id.tabWriteLabel)
+        tabHotLabel = findViewById(R.id.tabHotLabel)
         tabMineLabel = findViewById(R.id.tabMineLabel)
+        tabDraftsIcon = findViewById(R.id.tabDraftsIcon)
+        tabHotIcon = findViewById(R.id.tabHotIcon)
+        tabMineIcon = findViewById(R.id.tabMineIcon)
+        hot = HotPane(this, viewHot)
 
         list.layoutManager = LinearLayoutManager(this)
         adapter = DraftAdapter()
         list.adapter = adapter
 
-        // Tab 切换
+        // Tab 切换：全部原位过渡，不再跳页
         findViewById<View>(R.id.tabDrafts).setOnClickListener { switchTab(TAB_DRAFTS) }
-        findViewById<View>(R.id.tabHot).setOnClickListener {
-            startActivity(Intent(this, HotActivity::class.java))
-        }
-        findViewById<View>(R.id.tabWrite).setOnClickListener {
-            // ＋ 是动作按钮：直接打开写稿页，不再作为导航 Tab
-            startActivity(Intent(this, ComposeActivity::class.java))
-        }
+        findViewById<View>(R.id.tabHot).setOnClickListener { switchTab(TAB_HOT) }
         findViewById<View>(R.id.tabMine).setOnClickListener { switchTab(TAB_MINE) }
         findViewById<View>(R.id.btnSettings).setOnClickListener { switchTab(TAB_MINE) }
 
-        // 写稿 Hub 三个入口
-        findViewById<View>(R.id.entryAi).setOnClickListener {
-            startActivity(Intent(this, ComposeActivity::class.java))
-        }
-        findViewById<View>(R.id.entryMy).setOnClickListener {
-            startActivity(Intent(this, ManualEditActivity::class.java))
-        }
-        findViewById<View>(R.id.entryHot).setOnClickListener {
-            startActivity(Intent(this, HotActivity::class.java))
-        }
+        // 悬浮写稿按钮：点一下直接进写稿；长按走手动写
+        val fab = findViewById<View>(R.id.fabWrite)
+        fab.setOnClickListener { openCompose() }
+        fab.setOnLongClickListener { openManual(); true }
+
+        // 稿件页头部：手动写入口
+        findViewById<View>(R.id.btnManual).setOnClickListener { openManual() }
 
         bindMinePane()
         switchTab(TAB_DRAFTS)
         refresh()
     }
 
-    private fun switchTab(tab: Int) {
-        viewDrafts.visibility = if (tab == TAB_DRAFTS) View.VISIBLE else View.GONE
-        viewMine.visibility = if (tab == TAB_MINE) View.VISIBLE else View.GONE
-        markTab(tabDraftsLabel, tab == TAB_DRAFTS)
-        markTab(tabMineLabel, tab == TAB_MINE)
+    private fun openCompose() {
+        startActivity(Intent(this, ComposeActivity::class.java))
     }
 
-    private fun markTab(v: TextView, on: Boolean) {
-        v.setTextColor(getColor(if (on) R.color.primary else R.color.text_sub))
-        v.setTypeface(null, if (on) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
+    private fun openManual() {
+        startActivity(Intent(this, ManualEditActivity::class.java))
     }
+
+    private fun paneFor(tab: Int): View = when (tab) {
+        TAB_HOT -> viewHot
+        TAB_MINE -> viewMine
+        else -> viewDrafts
+    }
+
+    /** 原位切 Tab：旧页淡出、新页淡入并轻微上浮；视图常驻，滚动位置不丢 */
+    private fun switchTab(target: Int) {
+        if (target == currentTab) return
+        val first = currentTab == -1
+        val outTab = currentTab
+        val out = if (first) null else paneFor(outTab)
+        val inn = paneFor(target)
+        currentTab = target
+
+        markTab(tabDraftsLabel, tabDraftsIcon, target == TAB_DRAFTS)
+        markTab(tabHotLabel, tabHotIcon, target == TAB_HOT)
+        markTab(tabMineLabel, tabMineIcon, target == TAB_MINE)
+        if (target == TAB_HOT) hot.onShown()
+
+        // 既不入场也不出场的窗格：立即收起并复位（快速连点后不残留半透明状态）
+        for (t in intArrayOf(TAB_DRAFTS, TAB_HOT, TAB_MINE)) {
+            val p = paneFor(t)
+            if (p !== inn && p !== out) {
+                p.animate().cancel()
+                p.visibility = View.GONE
+                p.alpha = 1f
+                p.translationY = 0f
+            }
+        }
+
+        if (first) {
+            inn.visibility = View.VISIBLE
+            return
+        }
+
+        // 出场：淡出后收起（若期间又被选回，endAction 自会失效）
+        out?.let { o ->
+            o.animate().cancel()
+            o.translationY = 0f
+            o.animate().alpha(0f).setDuration(140).withEndAction {
+                if (currentTab != outTab) {
+                    o.visibility = View.GONE
+                    o.alpha = 1f
+                    o.translationY = 0f
+                }
+            }.start()
+        }
+
+        // 入场：淡入 + 轻微上浮
+        inn.animate().cancel()
+        inn.visibility = View.VISIBLE
+        inn.alpha = 0f
+        inn.translationY = dp(14).toFloat()
+        inn.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(220)
+            .setInterpolator(DecelerateInterpolator(1.6f))
+            .start()
+    }
+
+    private fun markTab(label: TextView, icon: TextView, on: Boolean) {
+        label.setTextColor(getColor(if (on) R.color.primary else R.color.text_sub))
+        label.setTypeface(null, if (on) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
+        val s = if (on) 1.12f else 1f
+        icon.animate().cancel()
+        icon.animate().scaleX(s).scaleY(s).setDuration(160)
+            .setInterpolator(DecelerateInterpolator())
+            .start()
+    }
+
+    private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
     /* ── 我的页：提词器默认 + 模型接口 ── */
 
@@ -155,6 +226,8 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         drafts = DraftStore.load(this)
         refresh()
+        // 从写稿/提词页回来时，若停在热点 Tab 也顺手保鲜
+        if (currentTab == TAB_HOT) hot.onShown()
     }
 
     /** 上次闪退的堆栈弹窗展示（诊断用） */
@@ -216,7 +289,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAB_DRAFTS = 0
-        private const val TAB_WRITE = 1
+        private const val TAB_HOT = 1
         private const val TAB_MINE = 2
     }
 }

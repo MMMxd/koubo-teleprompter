@@ -1,4 +1,4 @@
-# Android 构建产物
+# ── Android 构建产物 ──
 .gradle/
 build/
 app/build/
@@ -6,22 +6,34 @@ local.properties
 *.apk
 *.aab
 
-# 日志
+# ── 日志 ──
 *.log
 
-# IDE
+# ── IDE ──
 .idea/
 *.iml
 captures/
 
-# 实验用大模型（182MB 双语备选，未接入）
+# ── 大文件：一律不进 git！ ──
+# 依赖 AAR（本机已有，构建时直接读取）：
+#   新环境请下载 sherpa-onnx release 的 .aar 放到 app/libs/
+app/libs/*.aar
+# ASR 模型资产（int8 onnx + bpe 词表 + tokens，仅存本机）：
+app/src/main/assets/model/
+
+# ── 实验用大模型（82MB 双语备选，未接入） ──
 model-alt/
 
-# 系统
-.DS_Store
-
-# 会话测试产物
+# ── 会话测试产物（截图 / UI dump / 临时日志） ──
 /*.png
+/*.jpg
 /*.xml
-err*.txt
-build*.log
+/err*.txt
+/itemdraft-dump.txt
+
+# ── 签名文件 ──
+*.jks
+*.keystore
+
+# ── 系统 ──
+.DS_Store

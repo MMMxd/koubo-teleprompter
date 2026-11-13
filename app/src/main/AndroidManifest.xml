@@ -29,7 +29,6 @@
         <activity android:name=".ComposeActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".DraftActivity" android:exported="false" />
         <activity android:name=".ManualEditActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".HotActivity" android:exported="false" />
         <activity
             android:name=".PrompterActivity"
             android:exported="false"

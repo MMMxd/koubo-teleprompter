@@ -1,58 +1,52 @@
 package com.mxd.koubo
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/** 热点榜：五源聚合，单源失败不影响其它源；点「写稿」把热点带进创作简报 */
-class HotActivity : AppCompatActivity() {
+/**
+ * 热点 Tab 的视图控制器：热点页内嵌进首页（不再独立开 Activity）。
+ * 视图常驻 activity_main 的 viewHot，切 Tab 只改可见性 —— 数据、滚动位置都保留。
+ */
+class HotPane(activity: Activity, root: View) {
 
-    private lateinit var srcRow: LinearLayout
-    private lateinit var status: TextView
-    private lateinit var adapter: HotAdapter
+    private val srcRow: LinearLayout = root.findViewById(R.id.srcRow)
+    private val status: TextView = root.findViewById(R.id.hotStatus)
+    private val list: RecyclerView = root.findViewById(R.id.hotList)
+    private val adapter = HotAdapter(activity)
     private var activeSource = "douyin"
     private var loading = false
     private val fmt = SimpleDateFormat("HH:mm", Locale.CHINA)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_hot)
-
-        val list = findViewById<RecyclerView>(R.id.list)
-        list.layoutManager = LinearLayoutManager(this)
-        adapter = HotAdapter()
+    init {
+        list.layoutManager = LinearLayoutManager(activity)
         list.adapter = adapter
-        status = findViewById(R.id.hotStatus)
-        srcRow = findViewById(R.id.srcRow)
+        root.findViewById<View>(R.id.btnRefresh).setOnClickListener { load(force = true) }
+    }
 
+    /** 每次切到热点 Tab 调用：无数据或缓存过期（>20 分钟）就自动抓 */
+    fun onShown() {
         buildSrcRow()
-        findViewById<View>(R.id.btnRefresh).setOnClickListener { load(force = true) }
-        findViewById<View>(R.id.tabBackDrafts).setOnClickListener { finish() }
-        findViewById<View>(R.id.tabBackMine).setOnClickListener { finish() }
-        findViewById<View>(R.id.tabOpenWrite).setOnClickListener {
-            startActivity(Intent(this@HotActivity, ComposeActivity::class.java))
+        if (!loading && (HotStore.cacheFor(activeSource).isEmpty() || !HotStore.isFresh())) {
+            load(force = false)
         }
-        findViewById<View>(R.id.list).visibility = View.VISIBLE
-
-        load(force = false)
     }
 
     private fun buildSrcRow() {
         srcRow.removeAllViews()
         HotStore.SOURCES.forEachIndexed { i, (key, label) ->
-            val tv = TextView(this)
+            val tv = TextView(srcRow.context)
             tv.text = label
             tv.gravity = android.view.Gravity.CENTER
             tv.textSize = 13f
@@ -71,13 +65,14 @@ class HotActivity : AppCompatActivity() {
     }
 
     private fun markSrc(v: TextView, on: Boolean) {
+        val ctx = v.context
         if (on) {
             v.setBackgroundResource(R.drawable.bg_tile_tp)
-            v.setTextColor(getColor(R.color.primary))
+            v.setTextColor(ctx.getColor(R.color.primary))
             v.setTypeface(null, android.graphics.Typeface.BOLD)
         } else {
             v.setBackgroundResource(R.drawable.bg_input)
-            v.setTextColor(getColor(R.color.text_sub))
+            v.setTextColor(ctx.getColor(R.color.text_sub))
             v.setTypeface(null, android.graphics.Typeface.NORMAL)
         }
     }
@@ -85,10 +80,10 @@ class HotActivity : AppCompatActivity() {
     private fun load(force: Boolean) {
         if (loading) return
         loading = true
-        status.text = getString(R.string.hot_loading)
+        status.text = status.context.getString(R.string.hot_loading)
         status.visibility = View.VISIBLE
         HotStore.fetchAll(force) { results, errs, at ->
-            runOnUiThread {
+            status.post {
                 loading = false
                 adapter.items = results[activeSource].orEmpty()
                 adapter.notifyDataSetChanged()
@@ -108,9 +103,9 @@ class HotActivity : AppCompatActivity() {
         adapter.notifyDataSetChanged()
     }
 
-    private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
+    private fun dp(v: Int): Int = (v * srcRow.context.resources.displayMetrics.density).toInt()
 
-    inner class HotAdapter : RecyclerView.Adapter<HotVH>() {
+    class HotAdapter(private val activity: Activity) : RecyclerView.Adapter<HotVH>() {
         var items: List<HotItem> = emptyList()
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HotVH =
@@ -127,7 +122,7 @@ class HotActivity : AppCompatActivity() {
                     1 -> 0xFFFF2442.toInt()
                     2 -> 0xFFFF7A00.toInt()
                     3 -> 0xFFFFB020.toInt()
-                    else -> getColor(R.color.text_sub)
+                    else -> activity.getColor(R.color.text_sub)
                 }
             )
             h.title.text = item.title
@@ -142,16 +137,16 @@ class HotActivity : AppCompatActivity() {
                 h.label.visibility = View.GONE
             }
             h.write.setOnClickListener {
-                startActivity(
-                    Intent(this@HotActivity, ComposeActivity::class.java)
+                activity.startActivity(
+                    Intent(activity, ComposeActivity::class.java)
                         .putExtra("hotspot", item.title)
                 )
             }
             h.itemView.setOnLongClickListener {
                 try {
-                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(item.url)))
+                    activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(item.url)))
                 } catch (_: Exception) {
-                    Toast.makeText(this@HotActivity, "没有可打开的浏览器", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, "没有可打开的浏览器", Toast.LENGTH_SHORT).show()
                 }
                 true
             }

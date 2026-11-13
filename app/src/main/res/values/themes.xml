@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 全局页面转场：打开=新页上滑淡入、旧页微缩；关闭=反向。修复切页"整屏跳变"的生硬感 -->
+    <style name="WinAnim">
+        <item name="android:activityOpenEnterAnimation">@anim/act_open_in</item>
+        <item name="android:activityOpenExitAnimation">@anim/act_open_out</item>
+        <item name="android:activityCloseEnterAnimation">@anim/act_close_in</item>
+        <item name="android:activityCloseExitAnimation">@anim/act_close_out</item>
+    </style>
+
     <!-- 浅色主题（全局，方案 B 云白） -->
     <style name="Theme.Wenan" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">#FF6C5CE7</item>
@@ -9,6 +17,7 @@
         <item name="android:statusBarColor">#FFF6F6FA</item>
         <item name="android:navigationBarColor">#FFF6F6FA</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowAnimationStyle">@style/WinAnim</item>
     </style>
 
     <!-- 深色主题：提词全屏拍摄态专用 -->
@@ -19,5 +28,6 @@
         <item name="android:windowBackground">#FF0E0E13</item>
         <item name="android:statusBarColor">#FF0E0E13</item>
         <item name="android:navigationBarColor">#FF0E0E13</item>
+        <item name="android:windowAnimationStyle">@style/WinAnim</item>
     </style>
 </resources>

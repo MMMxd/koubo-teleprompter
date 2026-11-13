@@ -22,11 +22,22 @@
 .\gradlew assembleDebug
 ```
 
+### 大文件说明（一律不进 git）
+
+新 clone 出来的仓库**不能直接编译**，需要手动补两个本机大文件：
+
+| 文件 | 作用 | 来源 |
+| --- | --- | --- |
+| `app/libs/sherpa-onnx-2.0.1.aar`（48MB） | 语音识别引擎 | [sherpa-onnx releases](https://github.com/k2-fsa/sherpa-onnx/releases) 下载对应版本 |
+| `app/src/main/assets/model/`（约 26MB） | zipformer2 中文流式模型（int8 onnx + bpe + tokens） | 从有完整环境的机器拷贝，或自备同格式模型 |
+
+不补 AAR 编译不过；不补模型编译能过但语音跟随不可用（其余功能正常，`:speech` 进程失败不影响 UI）。
+
 产物：`app/build/outputs/apk/debug/app-debug.apk`（arm64-v8a + x86_64 双架构）。
 
 ## 技术要点
 
-- sherpa-onnx 2.0.1（zipformer2 CTC 中文流式识别，模型打包于 assets/model，26MB）
+- sherpa-onnx 2.0.1（zipformer2 CTC 中文流式识别，模型放 `assets/model`，仅存本机不进仓库）
 - 识别引擎跑在 `:speech` 独立进程：native 层失败只死引擎进程，UI 永不闪退
 - 麦克风采集在主进程前台服务（specialUse|microphone 类型），PCM 经广播喂给识别进程
 - View 体系 + 自研控件（PillToggle 胶囊开关，规避 Android16 SwitchCompat 崩溃）

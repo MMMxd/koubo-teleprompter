@@ -6,6 +6,7 @@
     <string name="tab_mine">我的</string>
     <string name="tab_hot">热点</string>
     <string name="tab_write">写稿</string>
+    <string name="manual_quick">✍️ 手动写</string>
     <string name="hot_title">热点榜</string>
     <string name="hot_sub">全网热榜，一键拿去写稿</string>
     <string name="hot_write">写稿</string>

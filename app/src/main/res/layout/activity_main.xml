@@ -42,9 +42,25 @@
             </LinearLayout>
 
             <TextView
+                android:id="@+id/btnManual"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_tile_tp"
+                android:gravity="center"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="9dp"
+                android:text="@string/manual_quick"
+                android:textColor="@color/primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
                 android:id="@+id/btnSettings"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_gravity="center_vertical"
                 android:background="@drawable/bg_circle"
                 android:gravity="center"
                 android:text="⚙"
@@ -73,7 +89,7 @@
             android:clipToPadding="false"
             android:paddingHorizontal="14dp"
             android:paddingTop="10dp"
-            android:paddingBottom="90dp" />
+            android:paddingBottom="150dp" />
 
         <TextView
             android:id="@+id/empty"
@@ -87,7 +103,96 @@
             android:visibility="gone" />
     </LinearLayout>
 
-    <!-- ═══ Tab 2：我的 ═══ -->
+    <!-- ═══ Tab 2：热点（内嵌页，原 HotActivity） ═══ -->
+    <LinearLayout
+        android:id="@+id/viewHot"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="18dp"
+            android:paddingTop="22dp"
+            android:paddingBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/hot_title"
+                    android:textColor="@color/text_main"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/hot_sub"
+                    android:textColor="@color/text_sub"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btnRefresh"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center_vertical"
+                android:background="@drawable/bg_circle"
+                android:gravity="center"
+                android:text="↻"
+                android:textColor="@color/primary"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/srcRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="6dp" />
+
+        <TextView
+            android:id="@+id/hotStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="18dp"
+            android:paddingTop="10dp"
+            android:textColor="@color/text_sub"
+            android:textSize="11sp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/hotList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingHorizontal="14dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="150dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="18dp"
+            android:paddingBottom="6dp"
+            android:text="@string/hot_note"
+            android:textColor="@color/text_sub"
+            android:textSize="10.5sp" />
+    </LinearLayout>
+
+    <!-- ═══ Tab 3：我的 ═══ -->
     <ScrollView
         android:id="@+id/viewMine"
         android:layout_width="match_parent"
@@ -99,7 +204,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp"
-            android:paddingBottom="100dp">
+            android:paddingBottom="150dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -303,201 +408,41 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- ═══ Tab 3：写稿（Hub：选怎么写） ═══ -->
-    <ScrollView
-        android:id="@+id/viewWrite"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone">
+    <!-- ═══ 悬浮写稿按钮：常驻，一键进写稿 ═══ -->
+    <LinearLayout
+        android:id="@+id/fabWrite"
+        android:layout_width="wrap_content"
+        android:layout_height="52dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="18dp"
+        android:layout_marginBottom="96dp"
+        android:background="@drawable/bg_fab"
+        android:clickable="true"
+        android:elevation="8dp"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="20dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:paddingBottom="100dp">
+            android:text="＋"
+            android:textColor="#FFFFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="@string/write_title"
-                android:textColor="@color/text_main"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="7dp"
+            android:text="@string/tab_write"
+            android:textColor="#FFFFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@string/write_sub"
-                android:textColor="@color/text_sub"
-                android:textSize="12sp" />
-
-            <!-- AI 帮写 -->
-            <LinearLayout
-                android:id="@+id/entryAi"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_grad_primary"
-                android:orientation="vertical"
-                android:padding="18dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="✦"
-                        android:textColor="#FFFFFFFF"
-                        android:textSize="22sp" />
-
-                    <Space
-                        android:layout_width="0dp"
-                        android:layout_height="1dp"
-                        android:layout_weight="1" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_pill_on"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="4dp"
-                        android:text="@string/entry_go"
-                        android:textColor="#FFFFFFFF"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="@string/entry_ai_title"
-                    android:textColor="#FFFFFFFF"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="@string/entry_ai_desc"
-                    android:textColor="#E9E4FF"
-                    android:textSize="12sp" />
-            </LinearLayout>
-
-            <!-- 自己写 -->
-            <LinearLayout
-                android:id="@+id/entryMy"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_card"
-                android:elevation="1dp"
-                android:orientation="vertical"
-                android:padding="18dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="✍️"
-                        android:textSize="22sp" />
-
-                    <Space
-                        android:layout_width="0dp"
-                        android:layout_height="1dp"
-                        android:layout_weight="1" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_tile_tp"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="4dp"
-                        android:text="@string/entry_go"
-                        android:textColor="@color/primary"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="@string/entry_my_title"
-                    android:textColor="@color/text_main"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="@string/entry_my_desc"
-                    android:textColor="@color/text_sub"
-                    android:textSize="12sp" />
-            </LinearLayout>
-
-            <!-- 从热点挑 -->
-            <LinearLayout
-                android:id="@+id/entryHot"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_input"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="14dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🔥"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_weight="1"
-                    android:text="@string/fromhot_line"
-                    android:textColor="@color/text_sub"
-                    android:textSize="12.5sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="→"
-                    android:textColor="@color/primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:gravity="center"
-                android:text="@string/write_note"
-                android:textColor="@color/text_sub"
-                android:textSize="10.5sp" />
-        </LinearLayout>
-    </ScrollView>
-
-    <!-- ═══ 底部 Tab 导航 ═══ -->
+    <!-- ═══ 底部 Tab 导航：稿件 / 热点 / 我的 ═══ -->
     <LinearLayout
         android:id="@+id/tabbar"
         android:layout_width="match_parent"
@@ -514,10 +459,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/tabDraftsIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="📄"
@@ -533,17 +482,19 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-
-
         <LinearLayout
             android:id="@+id/tabHot"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/tabHotIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🔥"
@@ -558,44 +509,19 @@
                 android:textSize="10.5sp" />
         </LinearLayout>
 
-        
-        <LinearLayout
-            android:id="@+id/tabWrite"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="30dp"
-                android:layout_height="26dp"
-                android:background="@drawable/bg_grad_primary"
-                android:gravity="center"
-                android:text="＋"
-                android:textColor="#FFFFFFFF"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tabWriteLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="写稿"
-                android:textColor="@color/text_main"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
         <LinearLayout
             android:id="@+id/tabMine"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/tabMineIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="⚙"
