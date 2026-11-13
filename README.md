@@ -21,6 +21,14 @@
 |:---:|:---:|:---:|:---:|:---:|
 | ![首页](docs/screenshots/screenshot-home.png) | ![热点](docs/screenshots/screenshot-hot.png) | ![写稿](docs/screenshots/screenshot-compose.png) | ![提词](docs/screenshots/screenshot-prompter.png) | ![设置](docs/screenshots/screenshot-mine.png) |
 
+## 📲 下载安装 / Download
+
+**免编译直装**：到 [Releases](https://github.com/MMMxd/koubo-teleprompter/releases/latest) 下载 `koubo-teleprompter-v4.6.apk`（约 95MB，**内置离线语音模型**），Android 6.0+ 手机直接安装。
+
+**Direct APK**: [koubo-teleprompter-v4.6.apk](https://github.com/MMMxd/koubo-teleprompter/releases/download/v4.6/koubo-teleprompter-v4.6.apk) · No build required, offline ASR model bundled.
+
+想自己编译看下面的[构建](#️-构建与运行--build)章节。
+
 ## ✨ 功能特性 / Features
 
 | 功能 | 说明 |
