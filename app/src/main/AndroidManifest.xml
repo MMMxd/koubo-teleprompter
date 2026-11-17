@@ -30,6 +30,12 @@
         <activity android:name=".DraftActivity" android:exported="false" />
         <activity android:name=".ManualEditActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
         <activity
+            android:name=".VoiceMemoActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:process=":speech"
+            android:theme="@style/Theme.Wenan.Dark" />
+        <activity
             android:name=".PrompterActivity"
             android:exported="false"
             android:screenOrientation="portrait"

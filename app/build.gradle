@@ -11,8 +11,8 @@ android {
         applicationId "com.mxd.koubo"
         minSdk 26
         targetSdk 34
-        versionCode 18
-        versionName "4.6"
+        versionCode 19
+        versionName "4.7"
         // 双架构：手机 arm64 + 模拟器 x86_64（sherpa AAR 自带两个架构的 so）
         ndk { abiFilters 'arm64-v8a', 'x86_64' }
 

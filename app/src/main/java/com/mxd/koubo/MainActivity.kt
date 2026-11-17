@@ -27,7 +27,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var drafts: MutableList<DraftItem>
     private lateinit var adapter: DraftAdapter
     private lateinit var empty: TextView
-    private lateinit var statsBar: TextView
+    private lateinit var dashLine1: TextView
+    private lateinit var dashStat1: TextView
+    private lateinit var dashStat1Label: TextView
+    private lateinit var dashStat2: TextView
+    private lateinit var dashStat2Label: TextView
     private lateinit var viewDrafts: View
     private lateinit var viewHot: View
     private lateinit var viewMine: View
@@ -49,7 +53,11 @@ class MainActivity : AppCompatActivity() {
 
         val list = findViewById<RecyclerView>(R.id.list)
         empty = findViewById(R.id.empty)
-        statsBar = findViewById(R.id.statsBar)
+        dashLine1 = findViewById(R.id.dashLine1)
+        dashStat1 = findViewById(R.id.dashStat1)
+        dashStat1Label = findViewById(R.id.dashStat1Label)
+        dashStat2 = findViewById(R.id.dashStat2)
+        dashStat2Label = findViewById(R.id.dashStat2Label)
         viewDrafts = findViewById(R.id.viewDrafts)
         viewHot = findViewById(R.id.viewHot)
         viewMine = findViewById(R.id.viewMine)
@@ -76,7 +84,10 @@ class MainActivity : AppCompatActivity() {
         fab.setOnClickListener { openCompose() }
         fab.setOnLongClickListener { openManual(); true }
 
-        // 稿件页头部：手动写入口
+        // 稿件页头部：语音速记 + 手动写入口
+        findViewById<View>(R.id.btnMemo).setOnClickListener {
+            startActivity(Intent(this, VoiceMemoActivity::class.java))
+        }
         findViewById<View>(R.id.btnManual).setOnClickListener { openManual() }
 
         bindMinePane()
@@ -250,10 +261,34 @@ class MainActivity : AppCompatActivity() {
     private fun refresh() {
         adapter.notifyDataSetChanged()
         empty.visibility = if (drafts.isEmpty()) View.VISIBLE else View.GONE
-        statsBar.visibility = if (drafts.isEmpty()) View.GONE else View.VISIBLE
+        refreshDashboard()
+    }
+
+    /** 创作驾驶舱：本周产线 + 播放量杠杆指标（5秒完播均值 / 钩子均分） */
+    private fun refreshDashboard() {
         val cal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -7) }
-        val week = drafts.count { it.updatedAt >= cal.timeInMillis }
-        statsBar.text = getString(R.string.stats_fmt, drafts.size, week)
+        val weekAt = cal.timeInMillis
+        val weekDrafts = drafts.count { it.updatedAt >= weekAt }
+        val weekPubs = drafts.sumOf { d -> d.publishes.count { it.at >= weekAt } }
+        dashLine1.text = "本周稿件 +$weekDrafts · 发布 $weekPubs 场"
+
+        val retains = drafts.flatMap { it.publishes }.filter { it.retain5s >= 0 }
+        if (retains.isEmpty()) {
+            dashStat1.text = "—"
+            dashStat1Label.text = "5秒完播均值 · 记一场发布就有"
+        } else {
+            dashStat1.text = "${retains.map { it.retain5s }.average().toInt()}%"
+            dashStat1Label.text = "5秒完播均值 · ${retains.size} 场数据"
+        }
+
+        val hooks = drafts.filter { it.hookScore >= 0 }.map { it.hookScore }
+        if (hooks.isEmpty()) {
+            dashStat2.text = "—"
+            dashStat2Label.text = "钩子均分 · 去钩子工坊评估"
+        } else {
+            dashStat2.text = "${hooks.average().toInt()}"
+            dashStat2Label.text = "钩子均分 · ${hooks.size} 篇已评估"
+        }
     }
 
     inner class DraftAdapter : RecyclerView.Adapter<DraftVH>() {
@@ -269,6 +304,29 @@ class MainActivity : AppCompatActivity() {
             h.tagPlatform.text = d.platform
             h.tagWords.text = "${d.content.length} 字"
             h.preview.text = d.content.replace(Regex("#+\\s*"), "").replace('\n', ' ')
+
+            // 播放量杠杆行：钩子强度 / 预计时长 / 发布场次
+            if (d.hookScore >= 0) {
+                h.tagHook.visibility = View.VISIBLE
+                h.tagHook.setBackgroundResource(Workshops.scoreBg(d.hookScore))
+                h.tagHook.text = "钩子 ${d.hookScore}"
+            } else {
+                h.tagHook.visibility = View.GONE
+            }
+            if (d.content.length >= 80) {
+                val sec = (d.content.length / 4.5).toInt()
+                h.tagDur.visibility = View.VISIBLE
+                h.tagDur.text = "≈${sec / 60}分%02d秒".format(sec % 60)
+            } else {
+                h.tagDur.visibility = View.GONE
+            }
+            if (d.publishes.isNotEmpty()) {
+                h.tagPub.visibility = View.VISIBLE
+                h.tagPub.text = "已发 ${d.publishes.size} 场"
+            } else {
+                h.tagPub.visibility = View.GONE
+            }
+
             h.quickTp.setOnClickListener {
                 startActivity(Intent(this@MainActivity, PrompterActivity::class.java).putExtra("id", d.id))
             }
@@ -283,6 +341,9 @@ class MainActivity : AppCompatActivity() {
         val tagPersona: TextView = v.findViewById(R.id.tagPersona)
         val tagPlatform: TextView = v.findViewById(R.id.tagPlatform)
         val tagWords: TextView = v.findViewById(R.id.tagWords)
+        val tagHook: TextView = v.findViewById(R.id.tagHook)
+        val tagDur: TextView = v.findViewById(R.id.tagDur)
+        val tagPub: TextView = v.findViewById(R.id.tagPub)
         val preview: TextView = v.findViewById(R.id.preview)
         val quickTp: TextView = v.findViewById(R.id.btnQuickTp)
     }

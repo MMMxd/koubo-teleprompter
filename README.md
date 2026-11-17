@@ -23,9 +23,9 @@
 
 ## 📲 下载安装 / Download
 
-**免编译直装**：到 [Releases](https://github.com/MMMxd/koubo-teleprompter/releases/latest) 下载 `koubo-teleprompter-v4.6.apk`（约 95MB，**内置离线语音模型**），Android 6.0+ 手机直接安装。
+**免编译直装**：到 [Releases](https://github.com/MMMxd/koubo-teleprompter/releases/latest) 下载最新 APK（约 95MB，**内置离线语音模型**），Android 6.0+ 手机直接安装。
 
-**Direct APK**: [koubo-teleprompter-v4.6.apk](https://github.com/MMMxd/koubo-teleprompter/releases/download/v4.6/koubo-teleprompter-v4.6.apk) · No build required, offline ASR model bundled.
+**Direct APK (v4.7)**: [koubo-teleprompter-v4.7.apk](https://github.com/MMMxd/koubo-teleprompter/releases/download/v4.7/koubo-teleprompter-v4.7.apk) · No build required, offline ASR model bundled.
 
 想自己编译看下面的[构建](#️-构建与运行--build)章节。
 
@@ -34,11 +34,15 @@
 | 功能 | 说明 |
 | --- | --- |
 | 🤖 **AI 三步写稿** | 选角色 → 生成 3 个选题方向 → 一键成稿，流式输出约 1~3 分钟。内置「AI渠道实测博主」等多个创作人格，可自定义角色、平台（小红书/抖音口播/公众号/通用）与目标字数 |
-| 🔥 **全网热点榜** | 聚合抖音、百度、头条、B站、微博五大热搜（各源独立抓取互不影响），20 分钟内存缓存；点「写稿」自动把热点标题填进创作简报 |
+| ⚡ **钩子工坊** | AI 按爆款钩子公式（数字冲击/反常识/悬念缺口/身份点名/损失厌恶等 8 类）重写视频前 3-5 秒并逐条打分，一键替换开头；稿件卡片实时显示「钩子强度」 |
+| 🎯 **标题封面工坊** | 标题 + 封面大字 + 副文案成对生成 5 套方案（≤20 字 / 6-12 字 / ≤15 字规则内），按点击潜力排序，一键采用 |
+| 📊 **发布台账** | 发布后手动记一笔（平台 / 5秒完播 / 完播率 / 赞评转），首页驾驶舱聚合「5秒完播均值 · 钩子均分」——只记账，永不自动发布 |
+| 🎙 **语音速记** | 车上/散步口述灵感，离线语音识别（引擎内置）直接存成草稿，数据不出设备 |
+| 🔥 **全网热点榜 + 选题判断** | 聚合抖音、百度、头条、B站、微博五大热搜（各源独立抓取互不影响），每条热点可一键 AI 评判「值不值得做」并给切角建议 |
 | 📺 **全屏提词器** | 大字滚动 + 金色定位线，速度 / 字号 / 透明度三个滑杆实时可调，播放暂停随时控 |
 | 🎥 **悬浮提词** | 独立进程悬浮窗挂在相机 App 上层，边拍边念不切屏；面板可调滚动、速度、字号、透明度、高亮与跟随 |
 | 🎙️ **语音跟随** | 离线流式语音识别（sherpa-onnx zipformer2 中文模型，约 26MB int8），念到哪句、稿子滚到哪句、当前句琥珀色高亮；识别引擎跑在独立 `:speech` 进程，崩溃不影响 UI |
-| 📚 **稿件库** | 稿件本地统一管理：编辑、分享导出、一键提词；卡片直达「▶ 提词」 |
+| 📚 **稿件库** | 稿件本地统一管理：编辑、分享导出、一键提词；卡片显示钩子强度、预计口播时长、发布场次 |
 | 🌙 **细节** | 常驻「＋写稿」悬浮按钮一键开写、三 Tab 原位丝滑切换、全局页面转场动画、深色提词主题 |
 
 ## 🤖 AI 与隐私 / AI & Privacy

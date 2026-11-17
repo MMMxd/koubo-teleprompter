@@ -168,3 +168,78 @@ object Llm {
         return out
     }
 }
+
+/* ── v4.7 播放量杠杆工坊：钩子 / 标题封面 / 选题判断 ── */
+
+/** 一条候选钩子（视频前 3-5 秒第一句话） */
+data class HookVariant(
+    val text: String,
+    val score: Int,      // 0~100
+    val formula: String, // 使用的钩子公式名
+    val reason: String   // 为什么这条能留住人
+)
+
+/** 一组标题+封面成对方案 */
+data class TitlePack(
+    val title: String,     // 视频标题（≤20 字）
+    val cover: String,     // 封面大字（6~12 字）
+    val coverSub: String,  // 封面副文案（≤15 字）
+    val score: Int,        // 点击潜力 0~100
+    val note: String       // 一句话点评
+)
+
+/** 热点选题判断 */
+data class TopicJudge(
+    val verdict: String,   // 值得做 / 可以做 / 不建议
+    val reason: String,
+    val angle: String      // 切角建议
+)
+
+object WorkshopParser {
+
+    fun parseHooks(json: JSONObject): List<HookVariant> {
+        val arr = json.optJSONArray("hooks") ?: return emptyList()
+        val out = mutableListOf<HookVariant>()
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            val text = o.optString("text").trim()
+            if (text.isEmpty()) continue
+            out.add(
+                HookVariant(
+                    text = text,
+                    score = o.optInt("score", 60).coerceIn(0, 100),
+                    formula = o.optString("formula", "钩子").trim().take(10),
+                    reason = o.optString("reason").trim()
+                )
+            )
+        }
+        return out.sortedByDescending { it.score }
+    }
+
+    fun parseTitles(json: JSONObject): List<TitlePack> {
+        val arr = json.optJSONArray("titles") ?: return emptyList()
+        val out = mutableListOf<TitlePack>()
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            val title = o.optString("title").trim()
+            if (title.isEmpty()) continue
+            out.add(
+                TitlePack(
+                    title = title,
+                    cover = o.optString("cover").trim(),
+                    coverSub = o.optString("coverSub").trim(),
+                    score = o.optInt("score", 60).coerceIn(0, 100),
+                    note = o.optString("note").trim()
+                )
+            )
+        }
+        return out.sortedByDescending { it.score }
+    }
+
+    fun parseJudge(json: JSONObject): TopicJudge =
+        TopicJudge(
+            verdict = json.optString("verdict", "可以做").trim(),
+            reason = json.optString("reason").trim(),
+            angle = json.optString("angle").trim()
+        )
+}

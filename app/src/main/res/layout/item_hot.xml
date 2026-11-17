@@ -35,6 +35,19 @@
             android:textSize="14.5sp"
             android:textStyle="bold" />
 
+        <TextView
+            android:id="@+id/hJudge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/bg_verdict_mid"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:textSize="11sp"
+            android:visibility="gone" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -62,6 +75,19 @@
                 android:textSize="11sp" />
         </LinearLayout>
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/btnJudge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/bg_input"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="7dp"
+        android:text="判"
+        android:textColor="@color/text_sub"
+        android:textSize="12sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/btnWrite"

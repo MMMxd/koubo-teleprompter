@@ -107,6 +107,7 @@ class HotPane(activity: Activity, root: View) {
 
     class HotAdapter(private val activity: Activity) : RecyclerView.Adapter<HotVH>() {
         var items: List<HotItem> = emptyList()
+        private val judges = mutableMapOf<String, TopicJudge>()
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HotVH =
             HotVH(LayoutInflater.from(parent.context).inflate(R.layout.item_hot, parent, false))
@@ -142,6 +143,37 @@ class HotPane(activity: Activity, root: View) {
                         .putExtra("hotspot", item.title)
                 )
             }
+            // 选题判断：这条热点值不值得做口播
+            val cached = judges[item.title]
+            if (cached != null) showJudge(h, cached) else h.judge.visibility = View.GONE
+            h.judgeBtn.setOnClickListener {
+                if (h.judge.visibility == View.VISIBLE && h.judge.text.toString() == "评判中…") return@setOnClickListener
+                val existing = judges[item.title]
+                if (existing != null) {
+                    showJudge(h, existing)
+                    return@setOnClickListener
+                }
+                h.judge.visibility = View.VISIBLE
+                h.judge.text = "评判中…"
+                h.judge.setBackgroundResource(R.drawable.bg_verdict_mid)
+                h.judge.setTextColor(activity.getColor(R.color.text_sub))
+                Thread {
+                    try {
+                        val sys = """
+                            你是短视频选题评委。判断一条热点值不值得做口播视频，四维：需求密度（热度背后的真实需求）、受众宽度、情绪张力、口播可讲性（能否输出观点与信息，纯围观吃瓜类降级）。
+                            verdict 只能取：值得做 / 可以做 / 不建议。
+                        """.trimIndent()
+                        val user = "热点：${item.title}\n来源平台：${item.source}\n输出JSON：{\"verdict\":\"值得做|可以做|不建议\",\"reason\":\"一句话理由\",\"angle\":\"给口播博主的切角建议一句话\"}"
+                        val j = WorkshopParser.parseJudge(Llm.extractJson(Llm.ask(activity, sys, user, jsonMode = true)))
+                        judges[item.title] = j
+                        activity.runOnUiThread { if (!activity.isFinishing) showJudge(h, j) }
+                    } catch (e: Exception) {
+                        activity.runOnUiThread {
+                            h.judge.text = "评判失败：${e.message?.take(60)}"
+                        }
+                    }
+                }.start()
+            }
             h.itemView.setOnLongClickListener {
                 try {
                     activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(item.url)))
@@ -151,6 +183,15 @@ class HotPane(activity: Activity, root: View) {
                 true
             }
         }
+
+        private fun showJudge(h: HotVH, j: TopicJudge) {
+            h.judge.visibility = View.VISIBLE
+            val (bg, color) = Workshops.verdictStyle(j.verdict)
+            h.judge.setBackgroundResource(bg)
+            h.judge.setTextColor(color)
+            val angle = if (j.angle.isNotBlank()) "｜切角：${j.angle}" else ""
+            h.judge.text = "${j.verdict} · ${j.reason}$angle"
+        }
     }
 
     class HotVH(v: View) : RecyclerView.ViewHolder(v) {
@@ -159,5 +200,7 @@ class HotPane(activity: Activity, root: View) {
         val label: TextView = v.findViewById(R.id.hLabel)
         val hot: TextView = v.findViewById(R.id.hHot)
         val write: TextView = v.findViewById(R.id.btnWrite)
+        val judgeBtn: TextView = v.findViewById(R.id.btnJudge)
+        val judge: TextView = v.findViewById(R.id.hJudge)
     }
 }
