@@ -47,7 +47,7 @@
 
 ## 🤖 AI 与隐私 / AI & Privacy
 
-- **模型接口自带 Key**：默认接口地址 `https://api.deepseek.com`，可在「我的」页改成任意 OpenAI 兼容端点（如 zcode/BigModel、SiliconFlow 等）。API Key 通过 `local.properties`（构建期）或 App「我的」页（运行期）配置，**源码与仓库中不含任何密钥**。
+- **模型接口自带 Key**：默认接口地址 `https://api.deepseek.com`，可在「我的」页改成任意 OpenAI 兼容端点（如 zcode/BigModel、SiliconFlow 等）。**APK 不内置任何密钥**，安装后在「我的」页填写，Key 存储于设备本地；源码与仓库中也不含任何密钥。
 - **数据全部本地**：稿件、偏好、热搜缓存只存设备本机；请求只发生在「AI 生成」与「抓热搜」时，且直连你填的接口/公开榜单，没有自建服务器。
 - **语音识别离线**：ASR 模型打包在 APK 内，语音跟随不联网。
 
@@ -56,13 +56,14 @@
 环境：JDK 17 + Android Studio（AGP 8.5 / compileSdk 34 / minSdk 26）
 
 ```powershell
-# 1. 在 local.properties（不进仓库）里配置：
+# 1. 在 local.properties（不进仓库）里配置 SDK 路径：
 sdk.dir=D:\\path\\to\\android-sdk
-llmKey=sk-你的DeepSeek密钥        # 也可启动后在 App「我的」页填写
 
 # 2. 补两个本机大文件（见下表），然后：
 .\gradlew assembleDebug
 ```
+
+> **APK 不内置任何 API Key**：构建不需要 llmKey；安装后在 App「我的」页填入你的 DeepSeek / OpenAI 兼容接口 Key（存储于设备本地）。
 
 产物：`app/build/outputs/apk/debug/app-debug.apk`（arm64-v8a + x86_64 双架构）
 

@@ -66,6 +66,7 @@ object Llm {
     /** 阻塞一次性调用，返回正文 content */
     fun ask(ctx: Context, system: String, user: String, jsonMode: Boolean): String {
         val (base, key, model) = cfg(ctx)
+        require(key.isNotBlank()) { "还没配 API Key：到「我的」页填一下就能用了" }
         val req = Request.Builder()
             .url("$base/chat/completions")
             .header("Authorization", "Bearer $key")
@@ -88,6 +89,7 @@ object Llm {
     /** 阻塞流式调用，返回完整正文；onDelta 在网络线程逐段回调 */
     fun stream(ctx: Context, system: String, user: String, onDelta: (String) -> Unit): String {
         val (base, key, model) = cfg(ctx)
+        require(key.isNotBlank()) { "还没配 API Key：到「我的」页填一下就能用了" }
         val req = Request.Builder()
             .url("$base/chat/completions")
             .header("Authorization", "Bearer $key")
