@@ -151,6 +151,10 @@ class PrompterActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(sb: SeekBar?) {}
         })
         btnFollow.setOnClickListener { toggleFollow() }
+        if (BuildConfig.DEBUG) {
+            // 长按跟随 = 装填模拟音源（filesDir/test_follow.wav），供无麦克风环境端到端调试跟随
+            btnFollow.setOnLongClickListener { loadSimWav() }
+        }
         findViewById<Button>(R.id.btnFloat).setOnClickListener { launchOverlay() }
     }
 
@@ -197,13 +201,42 @@ class PrompterActivity : AppCompatActivity() {
             status.text = getString(R.string.follow_off)
             return
         }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+        // 模拟跟随（仅 debug）：长按跟随按钮装填 filesDir/test_follow.wav，无需麦克风权限
+        if (simPcm == null && ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             != PackageManager.PERMISSION_GRANTED
         ) {
             requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), REQ_MIC)
             return
         }
         startFollow()
+    }
+
+    /* ── 模拟跟随（仅 debug 构建可用）：把 WAV 当麦克风输入喂给跟随管线 ── */
+
+    private var simPcm: ShortArray? = null
+    private var simPos = 0
+
+    /** 长按「跟随」装填模拟音源：filesDir/test_follow.wav（16kHz 单声道 16bit PCM） */
+    private fun loadSimWav(): Boolean {
+        val f = java.io.File(filesDir, "test_follow.wav")
+        if (!f.exists()) {
+            Toast.makeText(this, "模拟音源不存在：test_follow.wav", Toast.LENGTH_SHORT).show()
+            return true
+        }
+        return try {
+            val bytes = f.readBytes()
+            val sb = java.nio.ByteBuffer.wrap(bytes, 44, bytes.size - 44)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN).asShortBuffer()
+            val pcm = ShortArray(sb.remaining()).also { sb.get(it) }
+            simPcm = pcm
+            simPos = 0
+            val sec = pcm.size / 16000.0
+            Toast.makeText(this, String.format("模拟跟随已装填：%.0f 秒语音（念完自动停）", sec), Toast.LENGTH_LONG).show()
+            true
+        } catch (e: Exception) {
+            Toast.makeText(this, "WAV 解析失败：${e.message}", Toast.LENGTH_SHORT).show()
+            true
+        }
     }
 
     private fun startFollow() {
@@ -260,29 +293,57 @@ class PrompterActivity : AppCompatActivity() {
         pumping = true
         micThread = Thread {
             try {
-                val minBuf = AudioRecord.getMinBufferSize(
-                    16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT
-                ).coerceAtLeast(3200)
-                val rec = AudioRecord(
-                    MediaRecorder.AudioSource.MIC, 16000,
-                    AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, minBuf * 2
-                )
-                rec.startRecording()
-                runOnUiThread { status.text = getString(R.string.follow_on) }
-                val buf = ShortArray(1600) // 100ms @16kHz
-                while (pumping) {
-                    val n = rec.read(buf, 0, buf.size)
-                    if (n <= 0) break
-                    val bb = java.nio.ByteBuffer.allocate(n * 2).order(java.nio.ByteOrder.LITTLE_ENDIAN)
-                    bb.asShortBuffer().put(buf, 0, n)
-                    sendBroadcast(
-                        Intent(FollowIpc.ACTION_PCM).setPackage(packageName)
-                            .putExtra(FollowIpc.EXTRA_PCM, bb.array())
+                if (simPcm == null) {
+                    val minBuf = AudioRecord.getMinBufferSize(
+                        16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT
+                    ).coerceAtLeast(3200)
+                    val rec = AudioRecord(
+                        MediaRecorder.AudioSource.MIC, 16000,
+                        AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, minBuf * 2
                     )
+                    rec.startRecording()
+                    runOnUiThread { status.text = getString(R.string.follow_on) }
+                    val buf = ShortArray(1600) // 100ms @16kHz
+                    while (pumping) {
+                        val n = rec.read(buf, 0, buf.size)
+                        if (n <= 0) break
+                        val bb = java.nio.ByteBuffer.allocate(n * 2).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+                        bb.asShortBuffer().put(buf, 0, n)
+                        sendBroadcast(
+                            Intent(FollowIpc.ACTION_PCM).setPackage(packageName)
+                                .putExtra(FollowIpc.EXTRA_PCM, bb.array())
+                        )
+                    }
+                    try { rec.stop() } catch (_: Exception) {}
+                    rec.release()
+                    mic = null
+                } else {
+                    // 模拟跟随：按真实 100ms 节奏把 WAV 帧发进同一条管线，耗尽自动停
+                    runOnUiThread { status.text = "模拟跟随 · 播放测试语音中" }
+                    val sp = simPcm!!
+                    val buf = ShortArray(1600) // 100ms @16kHz
+                    while (pumping && simPos < sp.size) {
+                        val n = minOf(buf.size, sp.size - simPos)
+                        System.arraycopy(sp, simPos, buf, 0, n)
+                        simPos += n
+                        val bb = java.nio.ByteBuffer.allocate(n * 2).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+                        bb.asShortBuffer().put(buf, 0, n)
+                        sendBroadcast(
+                            Intent(FollowIpc.ACTION_PCM).setPackage(packageName)
+                                .putExtra(FollowIpc.EXTRA_PCM, bb.array())
+                        )
+                        Thread.sleep(100)
+                    }
+                    simPcm = null
+                    simPos = 0
+                    runOnUiThread {
+                        if (followOn) {
+                            status.text = "模拟语音播完 · 跟随已自动停止"
+                            stopFollow()
+                            btnFollow.setTextColor(0xFFFFFFFF.toInt())
+                        }
+                    }
                 }
-                try { rec.stop() } catch (_: Exception) {}
-                rec.release()
-                mic = null
             } catch (_: Throwable) {
                 mic = null
             }
